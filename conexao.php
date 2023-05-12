@@ -184,14 +184,13 @@ class Acoes
             'Content-Type: application/json',
         ));
         $response = curl_exec($ch);
-        $error = curl_error($ch);
-        curl_close($ch);
+        // $data = json_decode($response);
+        // if ($data) {
 
-        if ($error) {
-            // throw new Exception('Erro na conexão: ' . $error);
-            echo ('deu ruim');
-            die();
-        }
+
+        //     return ('Deu ruim');
+        //     die();
+        // }
         return $response;
     }
     public static function ConexaoHttpGet($variavel_sys)
@@ -288,5 +287,37 @@ class Chamada
     public function getDocuments()
     {
         return $this->conexao->ConexaoHttpGet("documents?page=1&");
+    }
+    public function vincular()
+    {
+        $documentKey = $_POST['documents'];
+        $signerKey = $_POST['signers'];
+        $data = [
+            'list' => [
+                'document_key' => $documentKey,
+                'signer_key' => $signerKey,
+                'sign_as' => 'sign',
+                'refusable' => true,
+                'message' => 'Prezado cliente,\nPor favor assine o documento.\n\nQualquer dúvida estou à disposição.\n\nAtenciosamente,\nJoão Colombo'
+            ]
+        ];
+        return $this->conexao->ConexaoHttpPost("lists", $data);
+    }
+    public function zap()
+    {
+        $signatureKey = $_POST['request_signature_key'];
+        $data = [
+            'request_signature_key' => $signatureKey
+        ];
+        return $this->conexao->ConexaoHttpPost("notify_by_whatsapp", $data);
+    }
+    public function email()
+    {
+        $signatureKey = $_POST['request_signature_key'];
+        $data = [
+            'request_signature_key' => $signatureKey,
+            'message' => 'Prezado cliente,\nPor favor assine o documento.\n\nQualquer dúvida estou à disposição.\n\nAtenciosamente,\nJoão Colombo'
+        ];
+        return $this->conexao->ConexaoHttpPost("notifications", $data);
     }
 }

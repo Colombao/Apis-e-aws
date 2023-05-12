@@ -78,56 +78,27 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.7.5/dist/sweetalert2.min.css
         $(document).ready(function() {
             $('#signer-form').submit(function(event) {
                 event.preventDefault();
-                // let email = $('#email').val();
-                // let phone_number = $('#phone_number').val();
-                // let name = $('#name').val();
-                // let documentation = $('#documentation').val();
-                // let birthday = $('#birthday').val();
-                // let auths = $('input[name="radio"]:checked').val();
-                // console.log(auths);
-                // let data = {
-                //     "signer": {
-                //         "email": email,
-                //         "phone_number": phone_number,
-                //         "auths": [
-                //             auths
-                //         ],
-                //         "name": name,
-                //         "documentation": documentation,
-                //         "birthday": birthday,
-                //         "has_documentation": true
-                //     }
-                // };
                 let form = $("#signer-form").serialize();
-                console.log(form);
                 $.ajax({
                     url: 'sendfile.php',
                     method: 'post',
                     data: form,
                     success: function(response) {
                         console.log(response);
-                        if (response != 'deu ruim') {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'firma ta forte',
-                                text: 'signatario criado ',
-                            }).then(function(result) {
-                                if (result.isConfirmed) {
-                                    window.location.href = 'index.php'
-                                }
-                            })
-
-                        } else {
+                        response = JSON.parse(response);
+                        if (Array.isArray(response.errors)) {
                             Swal.fire({
                                 icon: 'error',
                                 title: 'Oops...',
                                 text: 'Something went wrong!',
-                            }).then(function(result) {
-                                if (result.isConfirmed) {
-                                    window.location.href = 'index.php'
-                                }
                             })
 
+                        } else {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'firma ta forte',
+                                text: 'signatario criado ',
+                            })
                         }
                     },
                 });

@@ -22,6 +22,8 @@ $cats = $catAPI->getTenRandomCats();
 
 $conexao = new Acoes();
 
+extract($_POST);
+extract($_GET);
 
 if (isset($_GET['gato'])) {
   foreach ($cats as $cat) {
@@ -64,4 +66,18 @@ if (isset($_POST['name'])) {
 }
 if (isset($_GET['actions'])) {
   echo (new Chamada($conexao))->getSigners();
+}
+if (isset($_GET['objects'])) {
+  echo (new Chamada($conexao))->getDocuments();
+}
+if (isset($_POST['signers'])) {
+  echo (new Chamada($conexao))->vincular();
+}
+if (isset($action)) {
+  if ($action == 'zap') {
+    echo (new Chamada($conexao))->zap();
+  }
+  if ($action == 'email') {
+    echo (new Chamada($conexao))->email();
+  }
 }
