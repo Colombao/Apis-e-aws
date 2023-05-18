@@ -4,7 +4,6 @@ require_once 'vendor/autoload.php';
 use Clicksign\Client;
 use Clicksign\Resources\Signer;
 
-
 class Db
 {
 
@@ -56,12 +55,26 @@ class Actions
     }
     public static function list($s3)
     {
+        try {
+            $bucketName = 'bucket-brunorm'; // Substitua pelo nome do seu bucket no Amazon S3
+            $contents = $s3->listObjects([
+                'Bucket' => $bucketName,
+            ]);
 
-
+            foreach ($contents['Contents'] as $content) {
+                echo  $content['Key'] . "**";
+            }
+        } catch (Exception $exception) {
+            echo 'Erro ao listar arquivos: ' . $exception->getMessage();
+        }
+    }
+    public static function listar($s3)
+    {
         try {
 
             $contents = $s3->listObjects([
                 'Bucket' => 'bucket-brunorm',
+                'Prefix' => 'treinamento-teste/signed-documents/'
             ]);
             foreach ($contents['Contents'] as $content) {
                 echo $content['Key'] . "**";
@@ -90,6 +103,34 @@ class Actions
             exit("Please fix error with listing objects before continuing.");
         }
     }
+    public static function download2($s3, $caminho)
+    {
+        $bucket = 'bucket-brunorm';
+        try {
+
+            $contents = $s3->getCommand('GetObject', [
+                'Bucket' => $bucket,
+                'Key' => $caminho,
+            ]);
+            $request = $s3->createPresignedRequest($contents, '+20 minutes');
+
+            $presignedUrl = (string)$request->getUri();
+
+            return ($presignedUrl);
+        } catch (Exception $exception) {
+            // echo "Failed to list objects in $this->bucket with error: " . $exception->getMessage();
+            exit("Please fix error with listing objects before continuing.");
+        }
+    }
+
+
+    public static function pdfDownload()
+    {
+        extract($_GET);
+        $pdfUrl = $url;
+        header('Content-Disposition: attachment; filename="' . $file_name . '"');
+        readfile($pdfUrl);
+    }
     public static function deletar($s3, $caminho)
     {
         $bucket = 'bucket-brunorm';
@@ -116,13 +157,6 @@ class Actions
 
 class OpenAIChatbot
 {
-    private $openai_api_key;
-
-    public function __construct($api_key)
-    {
-        $this->openai_api_key = $api_key;
-    }
-
     public function get_response($question)
     {
         $url = "https://api.openai.com/v1/completions";
@@ -286,8 +320,22 @@ class Chamada
     }
     public function getDocuments()
     {
-        return $this->conexao->ConexaoHttpGet("documents?page=1&");
+        $page = 1;
+        $jsonResponse = $this->conexao->ConexaoHttpGet("documents?page=$page&");
+        $jsonObj = json_decode($jsonResponse);
+        $documents = $jsonObj->documents;
+        while ($jsonObj->page_infos->next_page != null) {
+            $page++;
+            $jsonResponse = $this->conexao->ConexaoHttpGet("documents?page=$page&");
+            $jsonObj = json_decode($jsonResponse);
+            array_push($documents, ...$jsonObj->documents);
+        }
+        $documents = [
+            "documents" => $documents
+        ];
+        return json_encode($documents);
     }
+
     public function vincular()
     {
         $documentKey = $_POST['documents'];

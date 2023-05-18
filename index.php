@@ -16,8 +16,6 @@ https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css
     <link rel="stylesheet" type="text/css" href="css/magnific-popup.css">
     <link rel="stylesheet" type="text/css" href="css/fonts-icones.css">
     <link rel="shortcut icon" href="https://www.loopnerd.com.br/img/favicon.png" type="image/ico" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/curl/0.8.2/curl.min.js"></script>
-
 
     <title>Composer</title>
 </head>
@@ -42,14 +40,19 @@ https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css
         <button id="visualizar" class="btn btn-primary btn-md">Visualizar</button>
         <button class=" btn btn-primary btn-md" id="botao-chat">Iniciar Chat</button>
         <button class="btn btn-primary btn-md" id="botao-gato">Obter 9 gatos aleatórios</button>
-
+        <label>Documentos</label>
+        <select name="documents" id="documents" class="form-select"></select>
+        <br>
+        <button class="btn btn-primary btn-sm" id="baixar-pdf">Baixar</button>
     </div>
 
     <div id="response-container"></div>
     <div id="catImageContainer"></div>
     <div id="gallery-container">
     </div>
-    <div hidden id="pergunta"></div>
+    <div id="gallery-pdf">
+    </div>
+    <div hidden id=" pergunta"></div>
 
 
     <script type=" text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -59,11 +62,74 @@ https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.js" integrity="sha512-0XDfGxFliYJPFrideYOoxdgNIvrwGTLnmK20xZbCAvPfLGQMzHUsaqZK8ZoH+luXGRxTrS46+Aq400nCnAT0/w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
+
     <script src="js/jquery.js"></script>
     <script src="js/script.js"></script>
     <script src="js/jquery.magnific-popup.min.js"></script>
 
     <script>
+        $('#baixar-pdf').on('click', function(e) {
+            let url = $('#documents').val();
+            let file_name = $('#documents :selected').text();
+            const pdfDownload = () => {
+                const link = document.createElement('a');
+                link.href = `sendfile.php?url=${encodeURIComponent(url)}&file_name=${file_name}&action=downloadSignedDocument`;
+                link.target = '_blank';
+                link.click();
+            };
+            Swal.fire({
+                title: 'Voce tem certeza?',
+                html: '<iframe src="' + url + '"></iframe>',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Vou baixa '
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    pdfDownload();
+                }
+            })
+
+            // Chama a função para iniciar o download
+        })
+
+        function listar() {
+            $.ajax({
+                url: "sendfile.php?pdf=1",
+                method: "get",
+                processData: false,
+                contentType: false,
+                success: function(response) {
+
+                    $('#documents').html(`<option value='Default' hidden> Select a documents</option>`)
+                    const files = response.split('**');
+
+                    files.map(file => {
+                        const file_name = file
+                        const temporary = file.split(".")
+                        const file_extension = temporary.pop()
+
+                        if (file_extension.toLowerCase() == "pdf") {
+                            $.ajax({
+                                url: `sendfile.php?file=${file}`,
+                                type: 'GET',
+                                success: (data) => {
+
+                                    const file_name = file;
+                                    const f_name = file_name.split("/").pop()
+                                    $('#documents').append(`<option value='${data}'>${f_name}</option>`);
+
+
+                                }
+                            })
+                        }
+                    })
+                }
+
+            });
+        }
+
+        listar();
         $('#create-document-button').click(function() {
             if ($('#file2').get(0).files.length === 0) {
                 alert('Selecione um arquivo para enviar.');
@@ -80,7 +146,6 @@ https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css
                 processData: false,
                 contentType: false,
                 success: function(response) {
-                    // alert('Documento criado com sucesso!');
                     console.log(response);
                     $('#response-container').html(response);
                 },
@@ -140,7 +205,6 @@ https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css
                 showCancelButton: true
             })
             if (text) {
-                document.getElementById('pergunta').innerHTML = text;
                 Swal.fire(text)
                 $.ajax({
                     url: `sendfile.php?api=1&text=${text}`,
@@ -183,6 +247,8 @@ https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css
                 }
             })
         }
+
+        function visualizar() {}
         $('#visualizar').click(function(e) {
             e.preventDefault();
             $.ajax({
@@ -202,7 +268,7 @@ https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css
                                 type: 'GET',
                                 success: (data) => {
                                     let title = `<button class='btn btn-primary'><a style='text-decoration: none; color: inherit;' href='${data}'>Baixar Imagem</a></button>
-                    <button class='btn btn-danger' onclick=apagar('${file}')>Apagar foto</button `;
+                        <button class='btn btn-danger' onclick=apagar('${file}')>Apagar foto</button `;
                                     $('#gallery-container').append('<div class="gallery-item"><a href="' + data + '" title="' + title + '"><img src="' + data + '" style="max-width: 100%; max-height: 300px; object-fit: cover;"></a></div>');
                                     $('#gallery-container a').magnificPopup({
                                         type: 'image',
@@ -233,6 +299,47 @@ https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css
                 }
             });
         });
+        $('#visualizar').click(function(e) {
+            e.preventDefault();
+            $.ajax({
+                url: 'sendfile.php?pdf=1',
+                method: 'GET',
+                contentType: false,
+                processData: false,
+                success: function(data) {
+                    data = data.split("**");
+
+                    data.map((file) => {
+                        const extensao = file.split('.').pop().toLowerCase();
+                        if (extensao === 'pdf') {
+                            $.ajax({
+                                url: `sendfile.php?file=${file}`,
+                                type: 'GET',
+                                success: (data) => {
+                                    let title = `<button class='btn btn-primary'><a style='text-decoration: none; color: inherit;' href='${data}'>Baixar Imagem</a></button>
+                                    <button class='btn btn-danger' onclick=apagar('${file}')>Apagar foto</button>`;
+                                    $('#gallery-pdf').append('<div class="gallery-item"><a href="' + data + '"><object id="iframe" data="' + data + '" src="' + data + '" type="application/pdf style="max-width: 100%; max-height: 300px; object-fit: cover;"></object></a></div>');
+                                    $('#gallery-pdf a').magnificPopup({
+                                        type: 'object',
+                                        gallery: {
+                                            enabled: true
+                                        },
+                                        mainClass: 'mfp-with-zoom mfp-fade',
+                                        removalDelay: 300
+
+                                    });
+
+                                }
+                            })
+                        }
+                    });
+                },
+                error: function(data) {
+                    console.log('Erro ao buscar lista de arquivos');
+                }
+            });
+        });
+
 
         $('#enviar').click(function() {
             var formData = new FormData();
@@ -244,13 +351,18 @@ https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css
                 contentType: false,
                 processData: false,
                 success: function(data) {
-                    console.log(data);
                     if (data == 'Deu boa') {
-                        Swal.fire(
-                            'Bom trabalho',
-                            data,
-                            'success'
-                        )
+                        Swal.fire({
+                            title: 'Voce tem certeza?',
+                            html: '<iframe src="' + file + '"></iframe>',
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonText: 'Vou enviar '
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                swal.fire(enviado);
+                            }
+                        })
                     } else {
                         Swal.fire({
                             icon: 'error',

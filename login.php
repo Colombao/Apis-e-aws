@@ -4,17 +4,26 @@
 <link rel="stylesheet" type="text/css" href="css/login.css?time<?php echo time(); ?>">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css">
 <script type=" text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="
+https://cdn.jsdelivr.net/npm/sweetalert2@11.7.5/dist/sweetalert2.all.min.js
+"></script>
+<link href="
+https://cdn.jsdelivr.net/npm/sweetalert2@11.7.5/dist/sweetalert2.min.css">
+<!-- Option 1: Include in HTML -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css">
 
 
 
 
-
-<div class="wrapper fadeInDown">
+<div class=" wrapper fadeInDown">
     <div id="formContent">
         <!-- Tabs Titles -->
 
         <!-- Icon -->
         <div id="icon" class="fadeIn first">
+            <div class="d-flex justify-content-end">
+                <a href="index.php" style="text-decoration: none;"> <i class="bi bi-box-arrow-in-left"></i></a>
+            </div>
             <h3>Atribuir</h3>
         </div>
 
@@ -81,45 +90,48 @@
             data: form,
             success: function(response) {
                 response = JSON.parse(response);
-                console.log(response);
-                const request_signature_key = response.list.request_signature_key;
-                if ($('#signers :selected').text().includes('whats')) {
-                    $.ajax({
-                        url: "sendfile.php?action=zap",
-                        method: "POST",
-                        data: `request_signature_key=${request_signature_key}`,
-                        success: function(response) {
-
-
-
-                        }
+                if (Array.isArray(response.errors)) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Something went wrong!',
                     })
                 } else {
-                    $.ajax({
-                        url: "sendfile.php?action=email",
-                        method: "POST",
-                        data: `request_signature_key=${request_signature_key}`,
-                        success: function(response) {
+                    const request_signature_key = response.list.request_signature_key;
+                    if ($('#signers :selected').text().includes('whats')) {
+                        $.ajax({
+                            url: "sendfile.php?action=zap",
+                            method: "POST",
+                            data: `request_signature_key=${request_signature_key}`,
+                            success: function(response) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'firma ta forte',
+                                    text: 'Cadastrado via Zap ',
+                                })
 
-                        }
-                    });
+
+                            }
+                        })
+                    } else {
+                        $.ajax({
+                            url: "sendfile.php?action=email",
+                            method: "POST",
+                            data: `request_signature_key=${request_signature_key}`,
+                            success: function(response) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'firma ta forte',
+                                    text: 'Cadastrado via Email ',
+                                })
+
+
+                            }
+                        });
+                    }
+
                 }
-                // if (Array.isArray(response.errors)) {
-                //     Swal.fire({
-                //         icon: 'error',
-                //         title: 'Oops...',
-                //         text: 'Something went wrong!',
-                //     })
-
-                // } else {
-                //     Swal.fire({
-                //         icon: 'success',
-                //         title: 'firma ta forte',
-                //         text: 'signatario vinculado ',
-                //     })
-                // }
-            },
-
+            }
 
         })
     })

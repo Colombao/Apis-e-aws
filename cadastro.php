@@ -18,8 +18,11 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.7.5/dist/sweetalert2.min.css
 
 <div class="wrapper fadeInDown">
     <div id="formContent">
+        <div class="d-flex justify-content-end">
+            <a href="index.php" style="text-decoration: none;"> <i class="bi bi-box-arrow-in-left"></i></a>
+        </div>
+        <div id="icon" class="fadeIn first d-flex justify-content-center">
 
-        <div id="icon" class="fadeIn first">
             <h3> Signatario </h3>
         </div>
         <br>

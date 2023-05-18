@@ -15,7 +15,6 @@ $s3 = new Aws\S3\S3Client(['region' => 'sa-east-1', 'version' => 'latest', 'cred
 
 $acoes = new Actions("bucket-brunorm");
 
-$api = new OpenAIChatbot("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");
 
 $catAPI = new CatAPI();
 $cats = $catAPI->getTenRandomCats();
@@ -32,6 +31,8 @@ if (isset($_GET['gato'])) {
 }
 
 if (isset($_GET['api'])) {
+  $api = new OpenAIChatbot();
+
   $resposta = $api->get_response($_GET['text']);
   echo ($resposta);
 }
@@ -44,6 +45,7 @@ if (isset($_GET['file'])) {
 if (isset($_GET['visualizar'])) {
   Actions::list($s3);
 }
+
 
 if (isset($_FILES['file'])) {
   $resposta = $acoes->put($s3);
@@ -80,4 +82,12 @@ if (isset($action)) {
   if ($action == 'email') {
     echo (new Chamada($conexao))->email();
   }
+  if ($action == 'downloadSignedDocument') {
+    Actions::pdfDownload();
+  }
+}
+
+if (isset($_GET['pdf'])) {
+  Actions::listar($s3);
+  echo ('caiu aq');
 }
