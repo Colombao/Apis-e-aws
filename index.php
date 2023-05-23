@@ -24,26 +24,31 @@ https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css
     <div class="d-flex justify-content-between">
         <h1>Envio de arquivo</h1>
         <div class="d-flex" style="gap: 10px; 		margin-right: 10px;">
-            <button class=" btn btn-danger btn-md"><a class="text-decoration-none " style="color: white;" href="cadastro.php">Cadastrar Signatario</button></a>
-            <button class=" btn btn-danger btn-md"><a class="text-decoration-none " style="color: white;" href="login.php">Vincular Signatario</button></a>
+            <a class="text-decoration-none " style="color: white;" href="cadastro.php"><button class=" btn btn-danger btn-md">Cadastrar Signatario</button></a>
+            <a class="text-decoration-none " style="color: white;" href="login.php"> <button class=" btn btn-danger btn-md">Vincular Signatario</button></a>
+            <a class="text-decoration-none " style="color: white;" href="csv.php"> <button class=" btn btn-danger btn-md">Csv</button></a>
         </div>
     </div>
     <div class="form-group">
-        <label for="file">Selecionar arquivo:</label>
+        <label for="file">Selecionar arquivo🤣:</label>
         <input type="file" id="file" name="file" class="form-control-file">
         <button id="enviar" class="btn btn-primary">Enviar</button>
-        <label for="file2">Selecionar arquivo:</label>
-        <input type="file" id="file2" name="file2" class="form-control-file">
-        <button class="btn btn-primary btn-md" id="create-document-button">Criar Documento</button>
     </div>
     <div id="bonito">
+        <label for="file2">Selecionar arquivo:</label>
+        <div class="input-group">
+            <input type="file" id="file2" name="file2" class="form-control-file">
+            <button class="btn btn-primary" id="create-document-button">Criar Documento</button>
+        </div>
+        <label>Documentos</label>
+        <div class="input-group">
+            <select name="documents" id="documents" class="form-select"></select>
+            <button class="btn btn-primary" id="baixar-pdf">Baixar</button>
+        </div>
+
         <button id="visualizar" class="btn btn-primary btn-md">Visualizar</button>
         <button class=" btn btn-primary btn-md" id="botao-chat">Iniciar Chat</button>
         <button class="btn btn-primary btn-md" id="botao-gato">Obter 9 gatos aleatórios</button>
-        <label>Documentos</label>
-        <select name="documents" id="documents" class="form-select"></select>
-        <br>
-        <button class="btn btn-primary btn-sm" id="baixar-pdf">Baixar</button>
     </div>
 
     <div id="response-container"></div>
@@ -55,7 +60,7 @@ https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css
     <div hidden id=" pergunta"></div>
 
 
-    <script type=" text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
@@ -78,19 +83,26 @@ https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css
                 link.target = '_blank';
                 link.click();
             };
-            Swal.fire({
-                title: 'Voce tem certeza?',
-                html: '<iframe src="' + url + '"></iframe>',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Vou baixa '
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    pdfDownload();
-                }
-            })
+            if (url == 'Default' || url == null) {
+                return Swal.fire({
+                    icon: 'error',
+                    title: 'Tá faltando o arquivo 👿',
+                    text: 'Não esqueça da proxima, vc foi avisado!'
+                })
 
-            // Chama a função para iniciar o download
+            } else {
+                Swal.fire({
+                    title: 'Voce tem certeza?',
+                    html: '<iframe src="' + url + '"></iframe>',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Vou baixa '
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        pdfDownload();
+                    }
+                })
+            }
         })
 
         function listar() {
@@ -132,7 +144,11 @@ https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css
         listar();
         $('#create-document-button').click(function() {
             if ($('#file2').get(0).files.length === 0) {
-                alert('Selecione um arquivo para enviar.');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Tá faltando o arquivo 👿',
+                    text: 'Não esqueça da proxima, vc foi avisado!'
+                })
                 return false;
             }
 
@@ -146,8 +162,11 @@ https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css
                 processData: false,
                 contentType: false,
                 success: function(response) {
-                    console.log(response);
-                    $('#response-container').html(response);
+                    swal.fire({
+                        icon: 'success',
+                        title: 'Arquivo enviado com sucesso 😎',
+                        text: 'Faça bom uso do seu arquivo'
+                    })
                 },
                 error: function(xhr, status, error) {
                     alert('Erro ao criar documento: ' + error);
@@ -166,7 +185,8 @@ https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css
                 success: function(response) {
                     const fotosgatos = response.split("**").slice(0, -2);
                     fotosgatos.map(function(foto) {
-                        let title = `<button onclick=enviar('${foto}') class='btn btn-primary'>Enviar</button>`
+                        let title = `<button class='btn btn-primary'><a style='text-decoration: none; color: inherit;' href='${foto}'>Baixar Imagem</a></button>
+                        <button class='btn btn-danger' onclick=apagar('${foto}')>Apagar foto</button>`
                         $('#gallery-container').append(`<div class="gallery-item"><a href="${foto}" title="${title}" ><img src="${foto}" style="max-width: 100%; max-height: 300px; object-fit: cover;"></a></div>`);
                         $('#gallery-container a').magnificPopup({
                             type: 'image',
@@ -316,11 +336,12 @@ https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css
                                 url: `sendfile.php?file=${file}`,
                                 type: 'GET',
                                 success: (data) => {
+                                    console.log()
                                     let title = `<button class='btn btn-primary'><a style='text-decoration: none; color: inherit;' href='${data}'>Baixar Imagem</a></button>
                                     <button class='btn btn-danger' onclick=apagar('${file}')>Apagar foto</button>`;
-                                    $('#gallery-pdf').append('<div class="gallery-item"><a href="' + data + '"><object id="iframe" data="' + data + '" src="' + data + '" type="application/pdf style="max-width: 100%; max-height: 300px; object-fit: cover;"></object></a></div>');
+                                    $('#gallery-pdf').append('<div class="gallery-item"><a href="' + data + '"><iframe id="iframe" data="' + data + '" src="' + data + '" type="application/pdf style="max-width: 100%; max-height: 300px; object-fit: cover;"></iframe></a></div>');
                                     $('#gallery-pdf a').magnificPopup({
-                                        type: 'object',
+                                        type: 'iframe',
                                         gallery: {
                                             enabled: true
                                         },
@@ -354,7 +375,6 @@ https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css
                     if (data == 'Deu boa') {
                         Swal.fire({
                             title: 'Voce tem certeza?',
-                            html: '<iframe src="' + file + '"></iframe>',
                             icon: 'warning',
                             showCancelButton: true,
                             confirmButtonText: 'Vou enviar '

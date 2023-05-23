@@ -66,9 +66,6 @@ https://cdn.jsdelivr.net/npm/sweetalert2@11.7.5/dist/sweetalert2.min.css
             <a class="underlineHover" href="login.php">Atribuir</a>
         </div>
 
-
-
-
     </div>
     <script>
         $('.Cpf').mask('000.000.000-00', {

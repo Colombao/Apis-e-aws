@@ -139,17 +139,64 @@ class Actions
             'Key'    => $caminho
         ));
     }
-    public static function cadastrar($conn)
+    public static function csv()
     {
-        extract($_POST);
-        $senha = md5($_POST['Senha']);
+        if (isset($_FILES['csv']) && $_FILES['csv']['error'] === UPLOAD_ERR_OK) {
+            $tmpFilePath = $_FILES['csv']['tmp_name'];
 
-        $stmt =  $conn->prepare("INSERT INTO usuario (Login,Senha) VALUES('$Login','$senha')");
-        $stmt->execute();
-        if ($stmt->rowCount()) {
-            echo 'Salvo com sucesso!';
+            $extensao = pathinfo($tmpFilePath, PATHINFO_EXTENSION);
+
+            if (strtolower($extensao) != 'csv') {
+                echo ('Não é csv');
+                die();
+            }
+
+            $conn = (new Db())->conn();
+
+            // Abrir csv
+            $csv = fopen($tmpFilePath, 'r');
+            if ($csv !== false) {
+                $stmt = $conn->prepare("INSERT INTO csv (Fullname, Cpf, Email, Telefone, Nascimento) VALUES (:column1, :column2, :column3, :column4, :column5)");
+
+                while (($data = fgetcsv($csv, 1000, ',', '{', '}')) !== false) {
+
+
+                    $column1 = $data[0]; // nome da coluna e valor
+                    $column2 = $data[1];
+                    $column3 = $data[2];
+                    $column4 = $data[3];
+                    $column5 = $data[4];
+
+                    $validar = $conn->prepare("SELECT * FROM csv WHERE Cpf = :Cpf");
+                    $validar->bindParam(':Cpf', $column2);
+                    $validar->execute();
+                    $sameData = $validar->rowCount();
+
+
+                    if ($sameData >= 1) {
+                        echo 'CPF já utilizado: ' . $column2 . '<br>';
+                    } else {
+                        $stmt->bindParam(':column1', $column1);
+                        $stmt->bindParam(':column2', $column2);
+                        $stmt->bindParam(':column3', $column3);
+                        $stmt->bindParam(':column4', $column4);
+                        $stmt->bindParam(':column5', $column5);
+                        $stmt->execute();
+                        echo 'Registro adicionado: ' . $column1 . '<br>';
+                    }
+                }
+                fclose($csv);
+                if ($sameData == 0) {
+                    echo 'Arquivo enviado com sucesso e dados inseridos no banco de dados!';
+                    die();
+                }
+            } else {
+                echo ('Não foi possível abrir o arquivo CSV.');
+            }
+
+            $conn = null;
         } else {
-            echo 'Algo não ocorreu como o esperado tente alterar o login/senha pois podem estar em uso por outra pessoa.';
+            echo ('Ocorreu um erro ao enviar o arquivo.');
         }
     }
 }

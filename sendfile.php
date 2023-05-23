@@ -51,13 +51,17 @@ if (isset($_FILES['file'])) {
   $resposta = $acoes->put($s3);
   echo ($resposta);
 }
+if (isset($_FILES['csv'])) {
+  $uri = Actions::csv();
+  echo $uri;
+}
 
 if (isset($_GET['apagar'])) {
   $uri = Actions::deletar($s3, $_GET['fto']);
 }
-if (isset($_POST['Login'])) {
-  Actions::cadastrar($db->conn());
-}
+  // if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+  //   $uri = Actions::csv();
+  // }
 
 if (isset($_FILES['file2'])) {
   echo (new Chamada($conexao))->createDocument();
